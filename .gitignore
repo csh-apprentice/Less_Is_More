@@ -1,0 +1,30 @@
+# ── Generated outputs ──────────────────────────────────────────────────────
+output/
+scores/
+
+# ── Private / large assets ─────────────────────────────────────────────────
+# Checkpoints and dataset are local only (symlinks or real dirs).
+checkpoints/
+dataset/
+
+# ── Legacy environment snapshots (replaced by install.sh) ──────────────────
+env/
+
+# ── Python ─────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# ── CUDA / Triton compile cache ─────────────────────────────────────────────
+.triton/
+*.so
+*.o
+
+# ── Misc ───────────────────────────────────────────────────────────────────
+.DS_Store
+.env
+*.log
+*.tmp

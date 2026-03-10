@@ -1,0 +1,49 @@
+# Less Is More — pip requirements
+# Install via install.sh (handles torch and flash-attn separately).
+# Do NOT pip install this file directly — torch must come first and
+# flash-attn must be built from source after torch is in place.
+#
+# Verified on: Python 3.12, PyTorch 2.4.1+cu121, CUDA 12.4 toolkit, A6000/A100
+
+# ── Core framework ──────────────────────────────────────────────────────────
+deepspeed==0.17.0
+accelerate==1.13.0
+peft==0.18.1
+
+# ── Diffusion / HuggingFace ─────────────────────────────────────────────────
+# Pinned to a specific commit — do not bump without testing checkpoint loading.
+git+https://github.com/huggingface/diffusers@50e18ee6982f8006e7247c756c573b8204fe354b
+transformers==4.47.1
+tokenizers==0.21.0
+safetensors==0.7.0
+datasets==4.7.0
+huggingface-hub==0.36.2
+
+# ── Model utilities ─────────────────────────────────────────────────────────
+bitsandbytes==0.49.2
+sentencepiece==0.2.1
+protobuf==6.33.5
+einops==0.8.2
+ftfy==6.3.1
+
+# ── Training utilities ──────────────────────────────────────────────────────
+torch-optimi==0.3.3
+pytorch-optimizer==3.10.0
+wandb==0.25.0
+tensorboard==2.20.0
+
+# ── Video / image I/O ───────────────────────────────────────────────────────
+imageio==2.37.3
+imageio-ffmpeg==0.6.0
+av==16.1.0
+pillow==12.0.0
+
+# ── Config / misc ───────────────────────────────────────────────────────────
+toml==0.10.2
+omegaconf==2.3.0
+hydra-core==1.3.2
+easydict==1.13
+loguru==0.7.3
+tqdm==4.67.3
+termcolor==3.3.0
+iopath==0.1.10

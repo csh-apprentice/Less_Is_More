@@ -1,0 +1,47 @@
+
+# Resolutions to train on, given as the side length of a square image. You can have multiple sizes here.
+resolutions = [512]
+
+# Enable aspect ratio bucketing.
+enable_ar_bucket = true
+# Min and max aspect ratios, given as width/height ratio.
+min_ar = 0.5
+max_ar = 2.0
+# Total number of aspect ratio buckets, evenly spaced (in log space) between min_ar and max_ar.
+num_ar_buckets = 7
+
+# For video training, you need to configure frame buckets (similar to aspect ratio buckets). There will always
+# be a frame bucket of 1 for images. Videos will be assigned to the first frame bucket that the video is greater than or equal to in length.
+# But videos are never assigned to the image frame bucket (1); if the video is very short it would just be dropped.
+frame_buckets = [1, 33, 65, 87]
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/3shapes_bokeh_30scenes_1030_3/1s"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/3shapes_bokeh_30scenes_1030_3/3s"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/3shapes_bokeh_30scenes_1030_3/5s"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/3shapes_bokeh_30scenes_1030_3/7s"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/3shapes_bokeh_30scenes_1030_3/9s"
+num_repeats = 1
+# num_repeats = 1

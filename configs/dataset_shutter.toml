@@ -1,0 +1,106 @@
+
+# Resolutions to train on, given as the side length of a square image. You can have multiple sizes here.
+resolutions = [512]
+
+# Enable aspect ratio bucketing.
+enable_ar_bucket = true
+# Min and max aspect ratios, given as width/height ratio.
+min_ar = 0.5
+max_ar = 2.0
+# Total number of aspect ratio buckets, evenly spaced (in log space) between min_ar and max_ar.
+num_ar_buckets = 7
+
+# For video training, you need to configure frame buckets (similar to aspect ratio buckets). There will always
+# be a frame bucket of 1 for images. Videos will be assigned to the first frame bucket that the video is greater than or equal to in length.
+# But videos are never assigned to the image frame bucket (1); if the video is very short it would just be dropped.
+frame_buckets = [1, 4, 8, 12]
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/1s4f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/1s8f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/1s12f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/3s4f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/3s8f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/3s12f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/5s4f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/5s8f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/5s12f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/7s4f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/7s8f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/7s12f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/9s4f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/9s8f/videos"
+num_repeats = 1
+
+[[directory]]
+# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
+# A missing caption file will log a warning, but then just train using an empty caption.
+path = "./dataset/shapes_blur/9s12f/videos"
+num_repeats = 1

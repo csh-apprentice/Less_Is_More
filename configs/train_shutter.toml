@@ -1,0 +1,139 @@
+# Extreme test configuration for FPS RMSNorm fix
+# - Gate init set to 0.0 (sigmoid(0) = 0.5, much higher influence)
+# - Learning rate 10x higher for aggressive testing
+# - NO warmup (immediate full learning rate)
+# - Testing RMSNorm effectiveness with strong FPS conditioning
+
+# Output path for training runs. Each training run makes a new directory in here.
+output_dir = './output'
+train_name = 'FPS_SHAPES_BLUR'
+
+# Dataset config file.
+dataset = './configs/dataset_shutter.toml'
+
+# training settings
+
+# I usually set this to a really high value because I don't know how long I want to train.
+epochs = 1000
+# Batch size of a single forward/backward pass for one GPU.
+micro_batch_size_per_gpu = 1
+# Pipeline parallelism degree. A single instance of the model is divided across this many GPUs.
+pipeline_stages = 1
+# Number of micro-batches sent through the pipeline for each training step.
+# If pipeline_stages > 1, a higher GAS means better GPU utilization due to smaller pipeline bubbles (where GPUs aren't overlapping computation).
+gradient_accumulation_steps = 4
+# Grad norm clipping.
+gradient_clipping = 1.0
+# Learning rate warmup - DISABLED for extreme test
+warmup_steps = 100
+
+# eval settings
+
+eval_every_n_epochs = 1
+eval_before_first_step = true
+# Might want to set these lower for eval so that less images get dropped (eval dataset size is usually much smaller than training set).
+# Each size bucket of images/videos is rounded down to the nearest multiple of the global batch size, so higher global batch size means
+# more dropped images. Usually doesn't matter for training but the eval set is much smaller so it can matter.
+eval_micro_batch_size_per_gpu = 1
+eval_gradient_accumulation_steps = 1
+
+# misc settings
+
+# Probably want to set this a bit higher if you have a smaller dataset so you don't end up with a million saved models.
+save_every_n_epochs = 25
+save_every_n_steps = 1000  # Save more frequently for testing
+# Can checkpoint the training state every n number of epochs or minutes. Set only one of these. You can resume from checkpoints using the --resume_from_checkpoint flag.
+#checkpoint_every_n_epochs = 1
+checkpoint_every_n_minutes = 60  # More frequent checkpointing for testing
+# Always set to true unless you have a huge amount of VRAM.
+activation_checkpointing = true
+# Controls how Deepspeed decides how to divide layers across GPUs. Probably don't change this.
+partition_method = 'parameters'
+# dtype for saving the LoRA or model, if different from training dtype
+save_dtype = 'bfloat16'
+# Batch size for caching latents and text embeddings. Increasing can lead to higher GPU utilization during caching phase but uses more memory.
+caching_batch_size = 1
+# How often deepspeed logs to console.
+steps_per_print = 1
+# How to extract video clips for training from a single input video file.
+# The video file is first assigned to one of the configured frame buckets, but then we must extract one or more clips of exactly the right
+# number of frames for that bucket.
+# single_beginning: one clip starting at the beginning of the video
+# single_middle: one clip from the middle of the video (cutting off the start and end equally)
+# multiple_overlapping: extract the minimum number of clips to cover the full range of the video. They might overlap some.
+# default is single_middle
+video_clip_mode = 'single_middle'
+
+
+[model]
+type = 'wan'
+ckpt_path = '/path/to/Wan2.1-T2V-14B'  # download from HuggingFace: Wan-AI/Wan2.1-T2V-14B
+dtype = 'bfloat16'
+# You can use fp8 for the transformer when training LoRA.
+#transformer_dtype = 'float8'
+timestep_sample_method = 'logit_normal'
+
+# ========== EXTREME FPS TESTING WITH RMSNORM ==========
+# SubTask 1: Stronger time embedding initialization (τ = 0.1)
+fps_tau_transform = "raw"                        # NEW: configurable transform
+fps_tau_scale = 1.0                        # NEW: configurable scale
+# SubTask 2: Configurable number of adapter tokens  
+fps_adapter_num_tokens = 4                       # Number of adapter tokens (was hardcoded to 5)
+
+# SubTask 3: Configurable FPS embedding dimension
+fps_embed_dim = 256                               # FPS MLP output dimension
+
+# SubTask 4: Rewritten FPS MLP with proper initialization
+# (Implemented in code - uses new initialization logic)
+
+# SubTask 5: EXTREME TEST - Gate starts at 0.0 (50% influence instead of 12%)
+fps_adapter_gate_init = 0.0                       # EXTREME: sigmoid(0) = 0.5 (50% FPS influence)
+
+# SubTask 6: Configurable LoRA alpha scaling
+fps_lora_alpha = 32.0                             # LoRA alpha = rank for scale = 1.0 (scale = alpha/rank = 32/32 = 1.0)
+
+# ========== NEW: CONFIGURABLE GATE MODES ==========
+# Choose between learned and fixed gate modes:
+# - 'learned': Gate is trainable parameter starting from fps_adapter_gate_init (old behavior)
+# - 'fixed': Gate is constant value from fps_gate_fixed_value (new behavior)
+
+fps_gate_mode = "fixed"                           # NEW: Gate mode - "learned" or "fixed"
+fps_gate_fixed_value = 0.5                        # NEW: Fixed gate value when fps_gate_mode="fixed" (0.8 = 80% FPS influence)
+
+# Example configurations:
+# For maximum FPS impact: fps_gate_mode = "fixed", fps_gate_fixed_value = 1.0
+# For minimal FPS impact: fps_gate_mode = "fixed", fps_gate_fixed_value = 0.1  
+# For trainable gate: fps_gate_mode = "learned", fps_adapter_gate_init = 0.0
+
+
+# SubTask 7: Removed LayerNorm from FPS conditioning
+# (Implemented in code - simplified MLP design)
+
+# SubTask 8: FPS adapter initialization verification
+# (Implemented in code - ensures zero-disturbance training)
+
+# SubTask 9: RMSNorm on K matrix for scale matching
+# (Implemented in code - K_fps normalized to match K_text scale)
+
+# Core FPS adapter settings
+fps_adapter_rank = 32                             # Higher LoRA rank for FPS adapters
+fps_condition_blocks = "deepest_third"            # Apply to deepest third of transformer blocks
+
+# NO [adapter] block - This enables FPS-ONLY training
+# The absence of this block means no base LoRA will be trained
+# Only FPS adapters and FPS MLP will be trained
+[adapter]
+type = 'lora'
+rank = 32
+# Dtype for the LoRA weights you are training.
+dtype = 'bfloat16'
+
+[optimizer]
+# AdamW from the optimi library is a good default since it automatically uses Kahan summation when training bfloat16 weights.
+# Look at train.py for other options. You could also easily edit the file and add your own.
+# adamw8bit, adamw_optimi, stableadamw,sgb, adamw8bitkahan
+type = 'adamw_optimi'
+lr = 2e-05                                        # EXTREME: 10x higher learning rate (2e-05 -> 2e-04)
+betas = [0.9, 0.99]
+weight_decay = 0.01
+eps = 1e-8

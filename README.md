@@ -180,6 +180,43 @@ deepspeed --num_gpus=2 train.py --deepspeed \
 
 Checkpoints are saved under `./output/<timestamp>/`. The relevant inference artifact is `epoch<N>/adapter_model.safetensors`.
 
+### Multi-GPU configuration
+
+**`--num_gpus` and `pipeline_stages`** are the two knobs:
+
+| Setup | `--num_gpus` | `pipeline_stages` in TOML | Notes |
+|---|---|---|---|
+| 2× A100 80GB (paper) | `2` | `1` | Data-parallel ZeRO; each GPU holds the full model |
+| 1× A100 80GB | `1` | `1` | Single-GPU; remove the `NCCL_*` env vars |
+| 2× GPU, model too large for one | `2` | `2` | Pipeline-parallel; model split across both GPUs |
+
+With `pipeline_stages = 1` (default), DeepSpeed uses ZeRO data parallelism — both GPUs train on different micro-batches and sync gradients. This is what the paper used.
+
+**On A100 SXM4 (NVLink):** the `NCCL_P2P_DISABLE=1 NCCL_IB_DISABLE=1` flags disable peer-to-peer and InfiniBand transport, which was required on PCIe-connected A6000s. On NVLink-enabled machines you can drop them for better GPU-to-GPU bandwidth:
+```bash
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+deepspeed --num_gpus=2 train.py --deepspeed \
+    --config configs/train_temperature.toml
+```
+
+**Resume from checkpoint:**
+```bash
+deepspeed --num_gpus=2 train.py --deepspeed \
+    --config configs/train_temperature.toml \
+    --resume_from_checkpoint
+```
+Resumes from the most recent DeepSpeed checkpoint in the run directory. Pass a specific subfolder name to resume from a particular step.
+
+### Ablation training (deepest-third LoRA only)
+
+To reproduce the ablation study (LoRA restricted to the deepest third of transformer blocks, matching the FPS adapter's block set):
+```bash
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+deepspeed --num_gpus=2 train.py --deepspeed \
+    --config configs/train_temperature_ablation.toml
+```
+At startup you should see `[ABLATION] lora_blocks=deepest_third: restricting LoRA to blocks 27–39 (13 of 40)` confirming the mode is active. Run inference on the resulting checkpoint with the standard script (no extra flags needed — the checkpoint naturally contains only deepest-third LoRA weights).
+
 ---
 
 ## Inference

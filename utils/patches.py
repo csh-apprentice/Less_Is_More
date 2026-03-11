@@ -23,8 +23,12 @@ except ModuleNotFoundError:
 from deepspeed.accelerator import get_accelerator
 
 from . import reduction
-import hyvideo.text_encoder
-from hyvideo.constants import PRECISION_TO_TYPE, TEXT_ENCODER_PATH
+try:
+    import hyvideo.text_encoder
+    from hyvideo.constants import PRECISION_TO_TYPE, TEXT_ENCODER_PATH
+    _hyvideo_available = True
+except ModuleNotFoundError:
+    _hyvideo_available = False
 
 
 def _move_adapter_to_device_of_base_layer(self, adapter_name: str, device: Optional[torch.device] = None) -> None:
@@ -300,7 +304,9 @@ def apply_patches():
     peft.tuners.tuners_utils.BaseTunerLayer._move_adapter_to_device_of_base_layer = _move_adapter_to_device_of_base_layer
 
     # Use torch_dtype to avoid needlessly loading the text encoder in float32, only to cast it right after.
-    hyvideo.text_encoder.load_text_encoder = load_text_encoder
+    # Only applies when training HunyuanVideo models; skipped for Wan2.1.
+    if _hyvideo_available:
+        hyvideo.text_encoder.load_text_encoder = load_text_encoder
 
     # LoadMicroBatch before sending / receiving activations so we can avoid a deadlock and broadcast the target
     # from the first stage to the last stage. InferenceSchedule already has the commands in the right order

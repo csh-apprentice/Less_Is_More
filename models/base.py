@@ -174,6 +174,20 @@ class BasePipeline:
                     target_linear_modules.add(full_submodule_name)
         target_linear_modules = list(target_linear_modules)
 
+        # Optional: restrict LoRA to a subset of transformer blocks.
+        # 'deepest_third' mirrors the FPS adapter block selection (last num_layers//3 blocks).
+        # Default ('all') keeps the paper's full-model LoRA behaviour unchanged.
+        lora_blocks = adapter_config.get('lora_blocks', 'all')
+        if lora_blocks == 'deepest_third':
+            num_layers = len(self.transformer.blocks)
+            allowed = set(range(num_layers - num_layers // 3, num_layers))
+            target_linear_modules = [
+                m for m in target_linear_modules
+                if (match := re.match(r'blocks\.(\d+)\.', m)) and int(match.group(1)) in allowed
+            ]
+            if is_main_process():
+                print(f'[ABLATION] lora_blocks=deepest_third: restricting LoRA to blocks {min(allowed)}–{max(allowed)} ({len(allowed)} of {num_layers})')
+
         adapter_type = adapter_config['type']
         if adapter_type == 'lora':
             peft_config = peft.LoraConfig(

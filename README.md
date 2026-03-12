@@ -1,10 +1,10 @@
 # Less Is More: Controllable Camera Property Generation for Text-to-Video Models
 
-<!-- TODO: replace with actual paper/project page links before final push -->
-<!-- [📄 Paper](https://arxiv.org/abs/XXXX.XXXXX) | [🌐 Project Page](https://your-project-page.github.io) | [🎬 Demo](https://your-demo-link) -->
+[📄 Paper](https://arxiv.org/abs/2511.17844)
 
 > **CVPR 2026**
-> *[Author names — to be filled before release]*
+> Shihan Cheng<sup>1</sup>, Nilesh Kulkarni<sup>2</sup>, David Hyde<sup>1</sup>, Dmitriy Smirnov<sup>2</sup>
+> <sup>1</sup>Vanderbilt University &nbsp;&nbsp; <sup>2</sup>Netflix
 
 ---
 
@@ -108,10 +108,9 @@ ckpt_path = '/path/to/Wan2.1-T2V-14B'
 
 ## Pretrained adapters (paper checkpoints)
 
-Download our trained adapters from Google Drive:
+Download our trained adapters from HuggingFace (link TBD — will be added before final release):
 
-<!-- TODO: add public Google Drive link before release -->
-> **[Checkpoints — Google Drive link (TBD)]**
+> **[Checkpoints — HuggingFace link (TBD)]**
 
 Place them under `checkpoints/`:
 ```
@@ -311,10 +310,10 @@ Expected output: 4 `[PASS]` lines for Tier 0, 3 `[PASS]` lines for Tier 1, plus 
 ## Citation
 
 ```bibtex
-@inproceedings{lessismore2026,
+@inproceedings{cheng2026lessismore,
   title     = {Less Is More: Controllable Camera Property Generation for Text-to-Video Models},
-  author    = {[Authors]},
-  booktitle = {CVPR},
+  author    = {Cheng, Shihan and Kulkarni, Nilesh and Hyde, David and Smirnov, Dmitriy},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
   year      = {2026}
 }
 ```

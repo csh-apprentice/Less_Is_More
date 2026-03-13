@@ -322,4 +322,4 @@ Expected output: 4 `[PASS]` lines for Tier 0, 3 `[PASS]` lines for Tier 1, plus 
 
 ## Acknowledgements
 
-This codebase is built on top of [diffusion-pipe](https://github.com/tdrussell/diffusion-pipe) by tdrussell. We thank the Wan2.1 team for releasing the backbone model.
+This work was conducted during an internship at Netflix. The codebase is built on top of [diffusion-pipe](https://github.com/tdrussell/diffusion-pipe) by tdrussell. We thank the Wan2.1 team for releasing the backbone model.

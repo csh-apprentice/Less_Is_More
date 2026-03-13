@@ -1,4 +1,4 @@
-# Less Is More: Controllable Camera Property Generation for Text-to-Video Models
+# Less is More: Data-Efficient Adaptation for Controllable Text-to-Video Generation
 
 [📄 Paper](https://arxiv.org/abs/2511.17844)
 
@@ -311,7 +311,7 @@ Expected output: 4 `[PASS]` lines for Tier 0, 3 `[PASS]` lines for Tier 1, plus 
 
 ```bibtex
 @inproceedings{cheng2026lessismore,
-  title     = {Less Is More: Controllable Camera Property Generation for Text-to-Video Models},
+  title     = {Less is More: Data-Efficient Adaptation for Controllable Text-to-Video Generation},
   author    = {Cheng, Shihan and Kulkarni, Nilesh and Hyde, David and Smirnov, Dmitriy},
   booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
   year      = {2026}

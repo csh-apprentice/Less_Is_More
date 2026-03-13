@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Less is More: Data-Efficient Adaptation for Controllable Text-to-Video Generation</title>
+
+  <!-- Bulma CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- Academicons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Project styles -->
+  <link rel="stylesheet" href="static/css/index.css" />
+</head>
+<body>
+
+<!-- ================================================================
+     HERO — Title, Authors, Buttons
+     ================================================================ -->
+<section class="hero is-white">
+  <div class="hero-body">
+    <div class="container is-max-desktop has-text-centered">
+
+      <div>
+        <span class="venue-tag">CVPR 2026</span>
+      </div>
+
+      <h1 class="hero-title">
+        Less is More: Data-Efficient Adaptation for<br />
+        Controllable Text-to-Video Generation
+      </h1>
+
+      <!-- Authors -->
+      <p class="author-list" style="margin-top:1.1rem;">
+        Shihan Cheng<sup>1</sup>,&nbsp;
+        Nilesh Kulkarni<sup>2</sup>,&nbsp;
+        David Hyde<sup>1</sup>,&nbsp;
+        Dmitriy Smirnov<sup>2</sup>
+      </p>
+
+      <!-- Affiliations -->
+      <p class="affiliation-list">
+        <sup>1</sup>Vanderbilt University&nbsp;&nbsp;&nbsp;
+        <sup>2</sup>Netflix
+      </p>
+
+      <!-- Link buttons -->
+      <div class="publication-links" style="margin-top:1.2rem;">
+        <a href="https://arxiv.org/pdf/2511.17844"
+           target="_blank"
+           rel="noopener"
+           class="button is-dark is-rounded">
+          <span class="icon"><i class="fas fa-file-pdf"></i></span>
+          <span>Paper</span>
+        </a>
+
+        <a href="https://arxiv.org/abs/2511.17844"
+           target="_blank"
+           rel="noopener"
+           class="button is-dark is-rounded">
+          <span class="icon"><i class="ai ai-arxiv"></i></span>
+          <span>arXiv</span>
+        </a>
+
+        <a href="https://github.com/csh-apprentice/Less_Is_More"
+           target="_blank"
+           rel="noopener"
+           class="button is-dark is-rounded">
+          <span class="icon"><i class="fab fa-github"></i></span>
+          <span>Code</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ================================================================
+     TEASER
+     ================================================================ -->
+<section class="section" style="padding-top:2.5rem; padding-bottom:2rem;">
+  <div class="container is-max-desktop">
+    <img src="static/images/teaser.png"
+         alt="Teaser figure showing controllable generation results"
+         class="teaser-image" />
+    <p class="teaser-caption">
+      Our method enables fine-grained, continuous control over physical camera parameters —
+      shutter speed, aperture, and color temperature — in text-to-video generation,
+      learned from sparse synthetic data alone.
+    </p>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ================================================================
+     ABSTRACT
+     ================================================================ -->
+<section class="section" style="padding-top:2.5rem; padding-bottom:2rem;">
+  <div class="container is-max-desktop">
+    <h2 class="section-title">Abstract</h2>
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <p class="abstract-text">
+          Fine-tuning large-scale text-to-video diffusion models to add new generative controls,
+          such as those over physical camera parameters (e.g., shutter speed or aperture), typically
+          requires vast, high-fidelity datasets that are difficult to acquire. In this work, we propose
+          a data-efficient fine-tuning strategy that learns these controls from sparse, low-quality
+          synthetic data. We show that not only does fine-tuning on such simple data enable the desired
+          controls, it actually yields superior results to models fine-tuned on photorealistic
+          &ldquo;real&rdquo; data. Beyond demonstrating these results, we provide a framework that
+          justifies this phenomenon both intuitively and quantitatively.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ================================================================
+     METHOD — Pipeline + Training Data
+     ================================================================ -->
+<section class="section" style="padding-top:2.5rem; padding-bottom:2rem;">
+  <div class="container is-max-desktop">
+    <h2 class="section-title">Method</h2>
+
+    <!-- Pipeline figure -->
+    <img src="static/images/pipeline.png"
+         alt="Pipeline overview figure"
+         class="pipeline-image" />
+    <p class="pipeline-caption">
+      <strong>Overview of our controllable generation pipeline.</strong>
+      To achieve decoupled control, we encode the scalar condition separately from the text guidance
+      via a parallel cross-attention module. During training, we optimize the conditional adapter while
+      actively updating the backbone by injecting LoRA layers into all DiT blocks. During inference,
+      we discard the LoRA weights from the shallow two-thirds of the transformer blocks, retaining only
+      the conditional adapter and backbone LoRA in the deepest third of the blocks. This selective
+      retention enables high-fidelity physical control while minimizing semantic corruption of the
+      backbone.
+    </p>
+
+    <!-- Training Data subsection -->
+    <h3 class="section-subtitle">Training Data</h3>
+    <p style="font-size:0.95rem; color:#555; margin-bottom:1.2rem;">
+      Each property is trained on 7 simple synthetic videos or images spanning a uniform grid from
+      Low to High. Despite the minimal and low-quality nature of this data, the model learns robust,
+      generalizable control.
+    </p>
+
+    <!-- Shutter strip (videos) -->
+    <div class="data-strip" data-sync-section>
+      <div class="data-strip-label">Shutter</div>
+      <div class="strip-row">
+        <span class="strip-endlabel">Low</span>
+        <div class="strip-items">
+          <div class="strip-item">
+            <video src="static/videos/syn/shutter/c1.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="syn-shutter"></video>
+          </div>
+          <div class="strip-item">
+            <video src="static/videos/syn/shutter/c2.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="syn-shutter"></video>
+          </div>
+          <div class="strip-item">
+            <video src="static/videos/syn/shutter/c3.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="syn-shutter"></video>
+          </div>
+          <div class="strip-item">
+            <video src="static/videos/syn/shutter/c4.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="syn-shutter"></video>
+          </div>
+          <div class="strip-item">
+            <video src="static/videos/syn/shutter/c5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="syn-shutter"></video>
+          </div>
+          <div class="strip-item">
+            <video src="static/videos/syn/shutter/c6.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="syn-shutter"></video>
+          </div>
+          <div class="strip-item">
+            <video src="static/videos/syn/shutter/c7.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="syn-shutter"></video>
+          </div>
+        </div>
+        <span class="strip-endlabel right">High</span>
+      </div>
+    </div>
+
+    <!-- Aperture strip (images) -->
+    <div class="data-strip">
+      <div class="data-strip-label">Aperture</div>
+      <div class="strip-row">
+        <span class="strip-endlabel">Low</span>
+        <div class="strip-items">
+          <div class="strip-item">
+            <img src="static/images/syn/aperture/c1.png" alt="Aperture condition 1" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/aperture/c2.png" alt="Aperture condition 2" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/aperture/c3.png" alt="Aperture condition 3" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/aperture/c4.png" alt="Aperture condition 4" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/aperture/c5.png" alt="Aperture condition 5" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/aperture/c6.png" alt="Aperture condition 6" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/aperture/c7.png" alt="Aperture condition 7" />
+          </div>
+        </div>
+        <span class="strip-endlabel right">High</span>
+      </div>
+    </div>
+
+    <!-- Temperature strip (images) -->
+    <div class="data-strip">
+      <div class="data-strip-label">Temperature</div>
+      <div class="strip-row">
+        <span class="strip-endlabel">Low</span>
+        <div class="strip-items">
+          <div class="strip-item">
+            <img src="static/images/syn/temperature/c1.png" alt="Temperature condition 1" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/temperature/c2.png" alt="Temperature condition 2" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/temperature/c3.png" alt="Temperature condition 3" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/temperature/c4.png" alt="Temperature condition 4" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/temperature/c5.png" alt="Temperature condition 5" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/temperature/c6.png" alt="Temperature condition 6" />
+          </div>
+          <div class="strip-item">
+            <img src="static/images/syn/temperature/c7.png" alt="Temperature condition 7" />
+          </div>
+        </div>
+        <span class="strip-endlabel right">High</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ================================================================
+     RESULTS GALLERY
+     ================================================================ -->
+<section class="section" style="padding-top:2.5rem; padding-bottom:2rem;">
+  <div class="container is-max-desktop">
+    <h2 class="section-title">Results Gallery</h2>
+
+    <!-- Tab buttons -->
+    <div class="gallery-tabs">
+      <button class="gallery-tab-btn is-active" data-tab="shutter">Shutter</button>
+      <button class="gallery-tab-btn" data-tab="aperture">Aperture</button>
+      <button class="gallery-tab-btn" data-tab="temperature">Temperature</button>
+    </div>
+
+    <!-- ---- SHUTTER panel ---- -->
+    <div id="tab-shutter" class="gallery-panel is-active">
+
+      <!-- Scene: cheeta -->
+      <div class="scene-block" data-sync-section>
+        <div class="condition-row">
+
+          <div class="condition-item">
+            <div class="condition-label">Very Low</div>
+            <video src="static/videos/gallery/shutter/cheeta/-1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-shutter-cheeta"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Low</div>
+            <video src="static/videos/gallery/shutter/cheeta/-0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-shutter-cheeta"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Neutral</div>
+            <video src="static/videos/gallery/shutter/cheeta/0.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-shutter-cheeta"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">High</div>
+            <video src="static/videos/gallery/shutter/cheeta/0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-shutter-cheeta"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Very High</div>
+            <video src="static/videos/gallery/shutter/cheeta/1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-shutter-cheeta"></video>
+          </div>
+
+        </div>
+        <p class="scene-prompt">
+          &ldquo;A cheetah in full sprint, a powerful, elongated blur as it hunts.&rdquo;
+        </p>
+      </div>
+
+      <!-- Scene: fire_player -->
+      <div class="scene-block" data-sync-section>
+        <div class="condition-row">
+
+          <div class="condition-item">
+            <div class="condition-label">Very Low</div>
+            <video src="static/videos/gallery/shutter/fire_player/-1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-shutter-fire"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Low</div>
+            <video src="static/videos/gallery/shutter/fire_player/-0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-shutter-fire"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Neutral</div>
+            <video src="static/videos/gallery/shutter/fire_player/0.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-shutter-fire"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">High</div>
+            <video src="static/videos/gallery/shutter/fire_player/0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-shutter-fire"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Very High</div>
+            <video src="static/videos/gallery/shutter/fire_player/1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-shutter-fire"></video>
+          </div>
+
+        </div>
+        <p class="scene-prompt">
+          &ldquo;A fire dancer spinning twin flaming torches, bright circular trails illuminating the night.&rdquo;
+        </p>
+      </div>
+
+    </div><!-- /shutter panel -->
+
+    <!-- ---- APERTURE panel ---- -->
+    <div id="tab-aperture" class="gallery-panel">
+
+      <!-- Scene: glass_wine -->
+      <div class="scene-block" data-sync-section>
+        <div class="condition-row">
+
+          <div class="condition-item">
+            <div class="condition-label">Very Low</div>
+            <video src="static/videos/gallery/aperture/glass_wine/-1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-aperture-wine"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Low</div>
+            <video src="static/videos/gallery/aperture/glass_wine/-0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-aperture-wine"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Neutral</div>
+            <video src="static/videos/gallery/aperture/glass_wine/0.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-aperture-wine"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">High</div>
+            <video src="static/videos/gallery/aperture/glass_wine/0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-aperture-wine"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Very High</div>
+            <video src="static/videos/gallery/aperture/glass_wine/1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-aperture-wine"></video>
+          </div>
+
+        </div>
+        <p class="scene-prompt">
+          &ldquo;A glass of red wine on a table with a view over vineyard rolling hills, the camera focus on the foreground.&rdquo;
+        </p>
+      </div>
+
+      <!-- Scene: panda -->
+      <div class="scene-block" data-sync-section>
+        <div class="condition-row">
+
+          <div class="condition-item">
+            <div class="condition-label">Very Low</div>
+            <video src="static/videos/gallery/aperture/panda/-1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-aperture-panda"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Low</div>
+            <video src="static/videos/gallery/aperture/panda/-0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-aperture-panda"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Neutral</div>
+            <video src="static/videos/gallery/aperture/panda/0.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-aperture-panda"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">High</div>
+            <video src="static/videos/gallery/aperture/panda/0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-aperture-panda"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Very High</div>
+            <video src="static/videos/gallery/aperture/panda/1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-aperture-panda"></video>
+          </div>
+
+        </div>
+        <p class="scene-prompt">
+          &ldquo;A panda eating bamboo in the foreground, leafy forest depth behind.&rdquo;
+        </p>
+      </div>
+
+    </div><!-- /aperture panel -->
+
+    <!-- ---- TEMPERATURE panel ---- -->
+    <div id="tab-temperature" class="gallery-panel">
+
+      <!-- Scene: cycle -->
+      <div class="scene-block" data-sync-section>
+        <div class="condition-row">
+
+          <div class="condition-item">
+            <div class="condition-label">Very Low</div>
+            <video src="static/videos/gallery/temperature/cycle/-1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-temp-cycle"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Low</div>
+            <video src="static/videos/gallery/temperature/cycle/-0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-temp-cycle"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Neutral</div>
+            <video src="static/videos/gallery/temperature/cycle/0.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-temp-cycle"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">High</div>
+            <video src="static/videos/gallery/temperature/cycle/0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-temp-cycle"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Very High</div>
+            <video src="static/videos/gallery/temperature/cycle/1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-temp-cycle"></video>
+          </div>
+
+        </div>
+        <p class="scene-prompt">
+          &ldquo;A cyclist racing through a tunnel with alternating shadow and light bands.&rdquo;
+        </p>
+      </div>
+
+      <!-- Scene: fountain -->
+      <div class="scene-block" data-sync-section>
+        <div class="condition-row">
+
+          <div class="condition-item">
+            <div class="condition-label">Very Low</div>
+            <video src="static/videos/gallery/temperature/fountain/-1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-temp-fountain"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Low</div>
+            <video src="static/videos/gallery/temperature/fountain/-0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-temp-fountain"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Neutral</div>
+            <video src="static/videos/gallery/temperature/fountain/0.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-temp-fountain"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">High</div>
+            <video src="static/videos/gallery/temperature/fountain/0.5.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-temp-fountain"></video>
+          </div>
+
+          <div class="condition-item">
+            <div class="condition-label">Very High</div>
+            <video src="static/videos/gallery/temperature/fountain/1.0.mp4"
+                   autoplay muted loop playsinline
+                   data-sync-group="gallery-temp-fountain"></video>
+          </div>
+
+        </div>
+        <p class="scene-prompt">
+          &ldquo;A fountain spraying water in a large plaza in front of a museum.&rdquo;
+        </p>
+      </div>
+
+    </div><!-- /temperature panel -->
+
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ================================================================
+     CITATION
+     ================================================================ -->
+<section class="section" style="padding-top:2.5rem; padding-bottom:2rem;">
+  <div class="container is-max-desktop">
+    <h2 class="section-title">Citation</h2>
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <pre class="citation-block">@inproceedings{cheng2026lessismore,
+  title     = {Less is More: Data-Efficient Adaptation for Controllable Text-to-Video Generation},
+  author    = {Cheng, Shihan and Kulkarni, Nilesh and Hyde, David and Smirnov, Dmitriy},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2026}
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ================================================================
+     ACKNOWLEDGEMENTS
+     ================================================================ -->
+<section class="section" style="padding-top:2rem; padding-bottom:2rem;">
+  <div class="container is-max-desktop">
+    <h2 class="section-title">Acknowledgements</h2>
+    <p class="ack-text">
+      This work builds on
+      <a href="https://github.com/tdrussell/diffusion-pipe" target="_blank" rel="noopener">diffusion-pipe</a>
+      by tdrussell and the
+      <a href="https://github.com/Wan-Video/Wan2.1" target="_blank" rel="noopener">Wan2.1</a>
+      backbone by the Wan team.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================
+     FOOTER
+     ================================================================ -->
+<footer class="footer">
+  <div class="content">
+    <p class="footer-note">
+      Page design inspired by
+      <a href="https://nerfies.github.io" target="_blank" rel="noopener">Nerfies</a>.
+    </p>
+  </div>
+</footer>
+
+<!-- Project JS -->
+<script src="static/js/index.js"></script>
+
+</body>
+</html>

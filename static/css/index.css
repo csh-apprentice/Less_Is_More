@@ -179,7 +179,7 @@ body {
   display: block;
   border-radius: 3px;
   object-fit: cover;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1 / 1;
 }
 
 /* ---------- Gallery Tabs ---------- */
@@ -261,7 +261,7 @@ body {
   height: auto;
   display: block;
   border-radius: 4px;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
 }
 

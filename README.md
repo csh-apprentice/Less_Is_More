@@ -3,7 +3,8 @@
 
 <a href="https://arxiv.org/abs/2511.17844"><img src="https://img.shields.io/badge/arXiv-2511.17844-b31b1b" alt="arXiv"></a>
 <a href="https://csh-apprentice.github.io/Less_Is_More/"><img src="https://img.shields.io/badge/Project_Page-green" alt="Project Page"></a>
-<a href="https://huggingface.co/csh-apprentice/Less_Is_More"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Checkpoints-blue" alt="HuggingFace"></a>
+<a href="https://huggingface.co/csh-apprentice/Less_Is_More"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Checkpoints-blue" alt="HuggingFace Checkpoints"></a>
+<a href="https://huggingface.co/datasets/csh-apprentice/Less_Is_More-dataset"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-blue" alt="HuggingFace Dataset"></a>
 
 **CVPR 2026**
 

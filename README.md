@@ -25,9 +25,9 @@ The conditioning scalar (e.g., normalized shutter speed value) is injected into 
 
 | Property | Training dataset | Conditioning range |
 |---|---|---|
-| Shutter speed | `shapes_blur/` (synthetic, multi-fps videos) | normalized shutter value |
-| Aperture (bokeh) | `3shapes_bokeh_30scenes_1030_3/` (Blender synthetic) | normalized aperture value |
-| Color temperature | `2dshapes_temp_part1+2/` (synthetic images) | normalized Kelvin value |
+| Shutter speed | `syn_shutter/` (synthetic, multi-fps videos) | normalized shutter value |
+| Aperture (bokeh) | `syn_aperture/` (Blender synthetic) | normalized aperture value |
+| Color temperature | `syn_temperature/` (synthetic images) | normalized Kelvin value |
 
 ---
 
@@ -140,14 +140,14 @@ Datasets are small (<10 MB each) and fully synthetic. Generation scripts are pro
 **Expected layout** (relative to repo root):
 ```
 dataset/
-├── shapes_blur/               # shutter speed
+├── syn_shutter/               # shutter speed
 │   ├── 1s4f/videos/
 │   ├── 1s8f/videos/
 │   └── ... (9 durations × 3 frame counts)
-├── 3shapes_bokeh_30scenes_1030_3/   # aperture
+├── syn_aperture/              # aperture (bokeh)
 │   ├── 1s/
 │   └── ... (5 durations)
-└── 2dshapes_temp_part1/       # color temperature (part 1 of 2)
+└── syn_temperature/           # color temperature
     ├── 1s/
     └── ... (5 durations)
 ```

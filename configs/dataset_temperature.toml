@@ -1,4 +1,3 @@
-
 # Resolutions to train on, given as the side length of a square image. You can have multiple sizes here.
 resolutions = [512]
 
@@ -16,62 +15,21 @@ num_ar_buckets = 7
 frame_buckets = [1, 33, 65, 87]
 
 [[directory]]
-# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
-# A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/2dshapes_temp_part1/1s"
+path = "./dataset/syn_temperature/1s"
 num_repeats = 1
 
 [[directory]]
-# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
-# A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/2dshapes_temp_part1/3s"
+path = "./dataset/syn_temperature/3s"
 num_repeats = 1
 
 [[directory]]
-# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
-# A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/2dshapes_temp_part1/5s"
+path = "./dataset/syn_temperature/5s"
 num_repeats = 1
 
 [[directory]]
-# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
-# A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/2dshapes_temp_part1/7s"
+path = "./dataset/syn_temperature/7s"
 num_repeats = 1
 
 [[directory]]
-# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
-# A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/2dshapes_temp_part1/9s"
-num_repeats = 1
-
-
-[[directory]]
-# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
-# A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/2dshapes_temp_part2/1s"
-num_repeats = 1
-
-[[directory]]
-# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
-# A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/2dshapes_temp_part2/3s"
-num_repeats = 1
-
-[[directory]]
-# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
-# A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/2dshapes_temp_part2/5s"
-num_repeats = 1
-
-[[directory]]
-# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
-# A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/2dshapes_temp_part2/7s"
-num_repeats = 1
-
-[[directory]]
-# Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
-# A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/2dshapes_temp_part2/9s"
+path = "./dataset/syn_temperature/9s"
 num_repeats = 1

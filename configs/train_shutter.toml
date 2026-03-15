@@ -6,7 +6,7 @@
 
 # Output path for training runs. Each training run makes a new directory in here.
 output_dir = './output'
-train_name = 'FPS_SHAPES_BLUR'
+train_name = 'shutter'
 
 # Dataset config file.
 dataset = './configs/dataset_shutter.toml'

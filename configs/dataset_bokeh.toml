@@ -18,30 +18,30 @@ frame_buckets = [1, 33, 65, 87]
 [[directory]]
 # Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
 # A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/3shapes_bokeh_30scenes_1030_3/1s"
+path = "./dataset/syn_aperture/1s"
 num_repeats = 1
 
 [[directory]]
 # Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
 # A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/3shapes_bokeh_30scenes_1030_3/3s"
+path = "./dataset/syn_aperture/3s"
 num_repeats = 1
 
 [[directory]]
 # Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
 # A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/3shapes_bokeh_30scenes_1030_3/5s"
+path = "./dataset/syn_aperture/5s"
 num_repeats = 1
 
 [[directory]]
 # Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
 # A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/3shapes_bokeh_30scenes_1030_3/7s"
+path = "./dataset/syn_aperture/7s"
 num_repeats = 1
 
 [[directory]]
 # Path to directory of images/videos, and corresponding caption files. The caption files should match the media file name, but with a .txt extension.
 # A missing caption file will log a warning, but then just train using an empty caption.
-path = "./dataset/3shapes_bokeh_30scenes_1030_3/9s"
+path = "./dataset/syn_aperture/9s"
 num_repeats = 1
 # num_repeats = 1

@@ -6,7 +6,7 @@
 
 # Output path for training runs. Each training run makes a new directory in here.
 output_dir = './output'
-train_name = 'TEMP_SHAPE_30S_ABLATION_DEEPEST_LORA'
+train_name = 'temperature_ablation'
 
 # Dataset config file.
 dataset = './configs/dataset_temperature.toml'

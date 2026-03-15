@@ -115,9 +115,9 @@ ckpt_path = '/path/to/Wan2.1-T2V-14B'
 
 ## Pretrained adapters (paper checkpoints)
 
-Download our trained adapters from HuggingFace (link TBD — will be added before final release):
+Download our trained adapters from HuggingFace:
 
-> **[Checkpoints — HuggingFace link (TBD)]**
+> **[csh-apprentice/Less_Is_More](https://huggingface.co/csh-apprentice/Less_Is_More)**
 
 Place them under `checkpoints/`:
 ```
@@ -153,6 +153,11 @@ dataset/
 ```
 
 Dataset configs already reference `./dataset/...` relative paths — no editing needed once the data is placed correctly.
+
+Download from HuggingFace: **[csh-apprentice/Less_Is_More-dataset](https://huggingface.co/datasets/csh-apprentice/Less_Is_More-dataset)**
+```bash
+huggingface-cli download csh-apprentice/Less_Is_More-dataset --repo-type dataset --local-dir dataset/
+```
 
 ---
 

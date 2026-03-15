@@ -1,10 +1,17 @@
-# Less is More: Data-Efficient Adaptation for Controllable Text-to-Video Generation
+<div align="center">
+<h1>Less is More: Data-Efficient Adaptation for Controllable Text-to-Video Generation</h1>
 
-[📄 Paper](https://arxiv.org/abs/2511.17844)
+<a href="https://arxiv.org/abs/2511.17844"><img src="https://img.shields.io/badge/arXiv-2511.17844-b31b1b" alt="arXiv"></a>
+<a href="https://csh-apprentice.github.io/Less_Is_More/"><img src="https://img.shields.io/badge/Project_Page-green" alt="Project Page"></a>
+<a href="https://huggingface.co/csh-apprentice/Less_Is_More"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Checkpoints-blue" alt="HuggingFace"></a>
 
-> **CVPR 2026**
-> Shihan Cheng<sup>1</sup>, Nilesh Kulkarni<sup>2</sup>, David Hyde<sup>1</sup>, Dmitriy Smirnov<sup>2</sup>
-> <sup>1</sup>Vanderbilt University &nbsp;&nbsp; <sup>2</sup>Netflix
+**CVPR 2026**
+
+[Shihan Cheng](https://csh-apprentice.github.io/)<sup>1</sup>, Nilesh Kulkarni<sup>2</sup>, [David Hyde](https://engineering.vanderbilt.edu/bio/david-hyde)<sup>1</sup>, Dmitriy Smirnov<sup>2</sup>
+
+**[Vanderbilt University](https://www.vanderbilt.edu/)<sup>1</sup>** &nbsp;&nbsp; **[Netflix](https://research.netflix.com/)<sup>2</sup>**
+
+</div>
 
 ---
 

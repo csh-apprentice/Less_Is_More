@@ -7,7 +7,7 @@
 
 **CVPR 2026**
 
-[Shihan Cheng](https://csh-apprentice.github.io/)<sup>1</sup>, Nilesh Kulkarni<sup>2</sup>, [David Hyde](https://engineering.vanderbilt.edu/bio/david-hyde)<sup>1</sup>, Dmitriy Smirnov<sup>2</sup>
+[Shihan Cheng](https://www.isis.vanderbilt.edu/team/373/)<sup>1</sup>, [Nilesh Kulkarni](https://nileshkulkarni.github.io/)<sup>2</sup>, [David Hyde](https://dabh.io/)<sup>1</sup>, [Dmitriy Smirnov](https://dsmirnov.com/)<sup>2</sup>
 
 **[Vanderbilt University](https://www.vanderbilt.edu/)<sup>1</sup>** &nbsp;&nbsp; **[Netflix](https://research.netflix.com/)<sup>2</sup>**
 

@@ -65,10 +65,7 @@ class Saver:
         dist.barrier()
         if dp_id == 0:
             partial_state_dict = {}
-            fps_adapter_params_found = 0
-            fps_mlp_params_found = 0
             
-            print(f'[SAVER_DEBUG] Starting parameter collection from pipeline_model...')
             for name, p in self.pipeline_model.named_parameters():
                 if p.requires_grad:
                     if not hasattr(p, 'original_name'):
@@ -77,18 +74,13 @@ class Saver:
                     
                     # Track FPS parameters
                     if 'fps_adapter' in name or 'fps_adapter' in p.original_name:
-                        fps_adapter_params_found += 1
-                        print(f'[SAVER_DEBUG] Found FPS adapter param: {name} -> {p.original_name}')
                     elif 'fps_conditioning' in name or 'fps_conditioning' in p.original_name:
-                        fps_mlp_params_found += 1
-                        print(f'[SAVER_DEBUG] Found FPS MLP param: {name} -> {p.original_name}')
                     
                     # TODO: maybe this needs to change if we ever have non-lora adapters?
                     partial_state_dict[p.original_name.replace('.default', '').replace('.modules_to_save', '')] = p.detach()
                     if 'save_dtype' in self.config:
                         convert_state_dict_dtype(partial_state_dict, self.config['save_dtype'])
             
-            print(f'[SAVER_DEBUG] Collection complete: {fps_mlp_params_found} FPS MLP, {fps_adapter_params_found} FPS adapter params')
             torch.save(partial_state_dict, tmp_dir / f'state_dict_{stage_id}.bin')
         dist.barrier()
         if dp_id == 0 and stage_id == 0:

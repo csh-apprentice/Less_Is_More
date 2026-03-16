@@ -373,43 +373,6 @@ if __name__ == '__main__':
         eval_data_map[name] = dataset_util.Dataset(eval_dataset_config, model, skip_dataset_validation=args.i_know_what_i_am_doing)
         dataset_manager.register(eval_data_map[name])
 
-    # For testing
-
-    # import imageio
-    # from pathlib import Path
-    # import torch.nn.functional as F
-    # dataset_manager.cache(unload_models=False)
-    # output_dir = Path('/home/anon/tmp')
-    # train_data.post_init(
-    #     0,
-    #     1,
-    #     1,
-    #     1,
-    # )
-    # vae = model.vae
-    # vae.model.to('cuda')
-    # count = 1
-    # for item in train_data:
-    #     latents = item['latents'].to('cuda')
-    #     h, w = latents.shape[-2:]
-    #     mask = item['mask'].to('cuda')
-    #     caption = item['caption'][0]
-    #     mask = mask.unsqueeze(1)  # make mask (bs, 1, img_h, img_w)
-    #     mask = F.interpolate(mask, size=(h, w), mode='nearest-exact')  # resize to latent spatial dimension
-    #     mask = mask.unsqueeze(2)  # make mask same number of dims as target
-    #     latents = latents * mask.to(latents.device)
-    #     video = vae.model.decode(latents, vae.scale).float().clamp_(-1, 1).squeeze(0)
-    #     video = torch.permute(video, (1, 2, 3, 0))
-    #     video = (video + 1) / 2
-    #     video = (video * 255).type(torch.uint8).cpu()
-    #     imageio.v3.imwrite(output_dir / f'{count}.mp4', video, fps=16)
-    #     with open(output_dir / f'{count}.txt', 'w') as f:
-    #         f.write(caption)
-    #     if count >= 10:
-    #         break
-    #     count += 1
-    # quit()
-
     if args.dump_dataset:
         # only works for flux
         import torchvision

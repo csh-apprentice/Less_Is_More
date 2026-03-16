@@ -361,58 +361,23 @@ class WanPipeline(BasePipeline):
         # but we still need to save them for inference
         fps_adapter_params_added = 0
         
-        print(f'[FPS_ADAPTER_SAVE_DEBUG] Starting FPS adapter parameter collection...')
-        print(f'[FPS_ADAPTER_SAVE_DEBUG] self.transformer type: {type(self.transformer)}')
-        print(f'[FPS_ADAPTER_SAVE_DEBUG] has blocks: {hasattr(self.transformer, "blocks")}')
         
         # Use the same successful method as [DIRECT_FPS_COUNT] to find FPS adapter parameters
         if hasattr(self.transformer, 'blocks'):
-            print(f'[FPS_ADAPTER_SAVE_DEBUG] Found {len(self.transformer.blocks)} blocks')
-            for i, block in enumerate(self.transformer.blocks):
+                for i, block in enumerate(self.transformer.blocks):
                 if hasattr(block, 'fps_adapter') and block.fps_adapter is not None:
-                    print(f'[FPS_ADAPTER_SAVE_DEBUG] Block {i} has FPS adapter')
-                    for param_name, param in block.fps_adapter.named_parameters():
-                        print(f'[FPS_ADAPTER_SAVE_DEBUG] Found param {param_name}, requires_grad={param.requires_grad}')
-                        if param.requires_grad:
+                                for param_name, param in block.fps_adapter.named_parameters():
+                                        if param.requires_grad:
                             # Construct full parameter name: blocks.{i}.fps_adapter.{param_name}
                             full_name = f'blocks.{i}.fps_adapter.{param_name}'
                             key = f'diffusion_model.{full_name}'
                             if key not in peft_state_dict:  # Avoid duplicates
                                 peft_state_dict[key] = param.detach().cpu()
                                 fps_adapter_params_added += 1
-                                print(f'[FPS_ADAPTER_SAVE_DEBUG] Added {key}')
-        else:
-            print(f'[FPS_ADAPTER_SAVE_DEBUG] self.transformer has no blocks attribute!')
-        
+                                else:
+            
         if fps_adapter_params_added > 0:
             print(f'[FPS_ADAPTER_SAVE] Added {fps_adapter_params_added} FPS adapter parameters to checkpoint')
-        
-        # PRINT ACTUAL FPS PARAMETER VALUES for tracking changes
-        print(f'[FPS_VALUES_SAVE] Printing sample FPS parameter values at save time...')
-        
-        # Print FPS MLP values
-        fps_mlp_keys = [k for k in peft_state_dict.keys() if 'fps_conditioning' in k]
-        for key in sorted(fps_mlp_keys):
-            tensor = peft_state_dict[key]
-            if tensor.numel() <= 10:  # Small tensors - show all values
-                print(f'[FPS_VALUES_SAVE] {key}: {tensor.flatten().tolist()}')
-            else:  # Large tensors - show statistics
-                norm = tensor.norm().item()
-                mean = tensor.mean().item()
-                std = tensor.std().item()
-                print(f'[FPS_VALUES_SAVE] {key}: norm={norm:.6f}, mean={mean:.6f}, std={std:.6f}')
-        
-        # Print sample FPS adapter values (first 2 blocks)
-        fps_adapter_keys = [k for k in peft_state_dict.keys() if 'fps_adapter' in k]
-        sample_fps_keys = [k for k in sorted(fps_adapter_keys) if 'blocks.27' in k or 'blocks.28' in k]
-        for key in sample_fps_keys:
-            tensor = peft_state_dict[key]
-            if 'gate_alpha' in key:
-                print(f'[FPS_VALUES_SAVE] {key}: {tensor.item():.6f}')
-            else:
-                norm = tensor.norm().item()
-                mean = tensor.mean().item()
-                print(f'[FPS_VALUES_SAVE] {key}: norm={norm:.6f}, mean={mean:.6f}')
         
         # Save the PEFT state dict
         safetensors.torch.save_file(peft_state_dict, save_dir / 'adapter_model.safetensors', metadata={'format': 'pt'})
@@ -423,7 +388,6 @@ class WanPipeline(BasePipeline):
         
     def test_fps_checkpoint_compatibility(self):
         """Test function to verify FPS parameters can be saved and loaded correctly"""
-        print('[DEBUG] Testing FPS checkpoint compatibility...')
         
         # Get current FPS parameters
         fps_params_before = {}
@@ -534,7 +498,6 @@ class WanPipeline(BasePipeline):
         if fps_values is not None:
             fps_non_none = [fps for fps in fps_values if fps is not None]
             if not fps_non_none:
-                print(f'[DEBUG] prepare_inputs() fps_values is not None but contains no valid fps values')  # Keep error case
 
         if self.cache_text_embeddings:
             text_embeddings_or_ids = inputs['text_embeddings']

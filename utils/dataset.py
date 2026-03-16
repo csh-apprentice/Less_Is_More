@@ -73,23 +73,6 @@ def dedup_and_sort(values):
 
 
 def _map_and_cache(dataset, map_fn, cache_dir, cache_file_prefix='', new_fingerprint_args=None, regenerate_cache=False, caching_batch_size=1):
-    # TODO: remove. Currently using this to avoid recaching everything.
-    # cache_arrow_files = list(str(path) for path in cache_dir.glob(f'{cache_file_prefix}*.arrow'))
-    # cache_arrow_files.sort()
-    # if len(cache_arrow_files) > 0:
-    #     dataset_shards = thread_map(
-    #         datasets.Dataset.from_file,
-    #         cache_arrow_files,
-    #         desc="Loading from map() cached files",
-    #     )
-
-    #     dataset = datasets.concatenate_datasets(
-    #         #[datasets.Dataset.from_file(f) for f in cache_arrow_files]
-    #         dataset_shards
-    #     )
-    #     dataset.set_format('torch')
-    #     return dataset
-
     # Do the fingerprinting ourselves, because otherwise map() does it by serializing the map function.
     # That goes poorly when the function is capturing huge models (slow, OOMs, etc).
     new_fingerprint_args = [] if new_fingerprint_args is None else new_fingerprint_args
@@ -1373,32 +1356,3 @@ class SkipFirstNSampler(torch.utils.data.Sampler):
             yield i
 
 
-if __name__ == '__main__':
-    from utils import common
-    common.is_main_process = lambda: True
-    from contextlib import contextmanager
-    @contextmanager
-    def _zero_first():
-        yield
-    common.zero_first = _zero_first
-
-    from utils import dataset as dataset_util
-    dataset_util.DEBUG = True
-
-    from models import flux
-    model = flux.CustomFluxPipeline.from_pretrained('/data2/imagegen_models/FLUX.1-dev', torch_dtype=torch.bfloat16)
-    model.model_config = {'guidance': 1.0, 'dtype': torch.bfloat16}
-
-    import toml
-    dataset_manager = dataset_util.DatasetManager(model)
-    with open('/home/anon/code/diffusion-pipe-configs/datasets/tiny1.toml') as f:
-        dataset_config = toml.load(f)
-    train_data = dataset_util.Dataset(dataset_config, model)
-    dataset_manager.register(train_data)
-    dataset_manager.cache()
-
-    train_data.post_init(data_parallel_rank=0, data_parallel_world_size=1, per_device_batch_size=1, gradient_accumulation_steps=2)
-    print(f'Dataset length: {len(train_data)}')
-
-    for item in train_data:
-        pass

@@ -23,7 +23,7 @@ info() { echo -e "${YELLOW}[INFO]${NC} $1"; }
 # ---------------------------------------------------------------------------
 # USER CONFIG — set these before running Tier 1
 # ---------------------------------------------------------------------------
-BACKBONE_PATH="/data/shihan/LIM/Wan2.1-T2V-14B"   # HuggingFace: Wan-AI/Wan2.1-T2V-14B
+BACKBONE_PATH="${BACKBONE_PATH:-/path/to/Wan2.1-T2V-14B}"  # override: export BACKBONE_PATH=/your/path
 CHECKPOINT_DIR="checkpoints/20251023_00-19-38/epoch1000"   # temperature checkpoint
 TOML_CONFIG="configs/train_temperature.toml"
 PROMPT_FILE="metric/high_quality_prompts_96.txt"

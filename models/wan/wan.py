@@ -360,24 +360,16 @@ class WanPipeline(BasePipeline):
         # FPS adapters were excluded from PEFT target modules to avoid double LoRA wrapping,
         # but we still need to save them for inference
         fps_adapter_params_added = 0
-        
-        
-        # Use the same successful method as [DIRECT_FPS_COUNT] to find FPS adapter parameters
         if hasattr(self.transformer, 'blocks'):
-                for i, block in enumerate(self.transformer.blocks):
+            for i, block in enumerate(self.transformer.blocks):
                 if hasattr(block, 'fps_adapter') and block.fps_adapter is not None:
-                                for param_name, param in block.fps_adapter.named_parameters():
-                                        if param.requires_grad:
-                            # Construct full parameter name: blocks.{i}.fps_adapter.{param_name}
+                    for param_name, param in block.fps_adapter.named_parameters():
+                        if param.requires_grad:
                             full_name = f'blocks.{i}.fps_adapter.{param_name}'
                             key = f'diffusion_model.{full_name}'
-                            if key not in peft_state_dict:  # Avoid duplicates
+                            if key not in peft_state_dict:
                                 peft_state_dict[key] = param.detach().cpu()
                                 fps_adapter_params_added += 1
-                                else:
-            
-        if fps_adapter_params_added > 0:
-            print(f'[FPS_ADAPTER_SAVE] Added {fps_adapter_params_added} FPS adapter parameters to checkpoint')
         
         # Save the PEFT state dict
         safetensors.torch.save_file(peft_state_dict, save_dir / 'adapter_model.safetensors', metadata={'format': 'pt'})
@@ -498,6 +490,7 @@ class WanPipeline(BasePipeline):
         if fps_values is not None:
             fps_non_none = [fps for fps in fps_values if fps is not None]
             if not fps_non_none:
+                pass
 
         if self.cache_text_embeddings:
             text_embeddings_or_ids = inputs['text_embeddings']

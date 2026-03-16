@@ -48,8 +48,8 @@ info "--- TIER 0: portability checks (no GPU) ---"
 info "T0.1  Import chain"
 python - <<'EOF'
 import sys
-from inference.test_fps_batch_prompts import load_prompts_from_file, load_prompts_from_directory
-from inference.test_fps_multiple_experiments_align import (
+from inference.inference import load_prompts_from_file, load_prompts_from_directory
+from inference.inference import (
     load_pipeline_from_toml, get_fps_block_indices,
     load_adapter_weights_selective, apply_checkpoint
 )
@@ -160,7 +160,7 @@ mkdir -p output/smoke_test/clean output/smoke_test/graft
 
 # T1.1: Clean backbone — no adapters, 1 prompt, 4 frames, 4 steps
 info "T1.1  Clean backbone inference (4 frames, 4 steps)"
-PYTHONPATH=. python inference/test_fps_batch_prompts.py \
+PYTHONPATH=. python inference/inference.py \
     --config "$TEMP_TOML" \
     --fps_values 0.5 \
     --steps 4 \
@@ -179,7 +179,7 @@ pass "T1.1  Clean backbone — $CLEAN_VIDS video(s) generated"
 
 # T1.2: GRAFT mode — LoRA + FPS adapters on deepest third
 info "T1.2  GRAFT inference (4 frames, 4 steps, 3 conditioning values)"
-PYTHONPATH=. python inference/test_fps_batch_prompts.py \
+PYTHONPATH=. python inference/inference.py \
     --config "$TEMP_TOML" \
     --checkpoint "$CHECKPOINT_DIR" \
     --fps_values 0.3 0.5 0.8 \

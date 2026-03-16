@@ -233,11 +233,11 @@ At startup you should see `[ABLATION] lora_blocks=deepest_third: restricting LoR
 
 ## Inference
 
-All inference modes are controlled by `inference/test_fps_batch_prompts.py`. **Always run from the repo root** with `PYTHONPATH=.` so that `models/`, `utils/`, and `inference_utils/` are importable.
+All inference modes are controlled by `inference/inference.py`. **Always run from the repo root** with `PYTHONPATH=.` so that `models/`, `utils/`, and `inference_utils/` are importable.
 
 **GRAFT (recommended — paper's clean method):**
 ```bash
-PYTHONPATH=. python inference/test_fps_batch_prompts.py \
+PYTHONPATH=. python inference/inference.py \
     --config configs/train_temperature.toml \
     --checkpoint checkpoints/temperature/epoch1000 \
     --fps_values 0.2 0.5 0.8 \

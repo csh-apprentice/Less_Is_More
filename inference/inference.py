@@ -10,13 +10,13 @@ Prompt input modes (mutually exclusive):
   --prompt_folder DIR   Directory of .txt files; each file = one prompt (whole
                         file content is the prompt text).
 
-Inference modes (mutually exclusive; default is "dirty" — full LoRA + FPS):
-  --graft               Paper's clean method: LoRA all blocks, FPS adapter in
+Inference modes (mutually exclusive; default is "joint" — full LoRA + FPS everywhere):
+  --decoupled           Paper's method (Decoupled): LoRA all blocks, FPS adapter in
                         deepest-third blocks only.
-  --clean               Pure backbone; no LoRA, no FPS adapters loaded.
+  --backbone_only       Pure backbone; no LoRA, no FPS adapters loaded.
   --fps_only            Load only FPS-related parameters from the checkpoint.
   --base_only           Load only base LoRA parameters from the checkpoint.
-  (no flag)             Normal/dirty mode: load all parameters.
+  (no flag)             Joint mode: load all parameters everywhere.
 
 Alignment:
   --align               Enable magnitude alignment for --fps_only mode.
@@ -32,7 +32,7 @@ Checkpoint sweep:
 
 Output naming:
   {line_id:05d}_{first_5_words_of_prompt}_{fps_value}.mp4
-  For modes with no FPS conditioning (--clean, --base_only):
+  For modes with no FPS conditioning (--backbone_only, --base_only):
       {line_id:05d}_{first_5_words_of_prompt}.mp4
 """
 
@@ -193,9 +193,9 @@ def get_fps_block_indices(config):
 
 
 def load_adapter_weights_selective(pipeline, checkpoint_path, fps_only=False, base_only=False,
-                                   graft_mode=False, fps_block_indices=None):
+                                   decoupled_mode=False, fps_block_indices=None):
     """Load adapter weights with selective parameter filtering using temporary files."""
-    if not fps_only and not base_only and not graft_mode:
+    if not fps_only and not base_only and not decoupled_mode:
         logging.info("Loading all parameters (normal mode)")
         pipeline.load_adapter_weights(checkpoint_path)
         return
@@ -229,11 +229,11 @@ def load_adapter_weights_selective(pipeline, checkpoint_path, fps_only=False, ba
         logging.info(f"BASE-ONLY MODE: Filtered {len(filtered_checkpoint)} base LoRA parameters "
                      f"out of {len(checkpoint)} total")
 
-    elif graft_mode:
+    elif decoupled_mode:
         if fps_block_indices is None:
             raise ValueError("GRAFT mode requires fps_block_indices to be specified")
 
-        logging.info(f"GRAFT MODE: Loading FPS adapters + base LoRA only in blocks {fps_block_indices}")
+        logging.info(f"DECOUPLED MODE: Loading FPS adapters + base LoRA only in blocks {fps_block_indices}")
 
         filtered_checkpoint = {}
         for k, v in checkpoint.items():
@@ -251,8 +251,8 @@ def load_adapter_weights_selective(pipeline, checkpoint_path, fps_only=False, ba
                     except (IndexError, ValueError):
                         pass
 
-        mode_name = "GRAFT"
-        logging.info(f"GRAFT MODE: Filtered {len(filtered_checkpoint)} parameters "
+        mode_name = "DECOUPLED"
+        logging.info(f"DECOUPLED MODE: Filtered {len(filtered_checkpoint)} parameters "
                      f"(FPS + grafted base LoRA) out of {len(checkpoint)} total")
 
     fps_conditioning_params = [k for k in checkpoint.keys() if 'fps_conditioning' in k]
@@ -278,7 +278,7 @@ def load_adapter_weights_selective(pipeline, checkpoint_path, fps_only=False, ba
         logging.info(f"  Skipping FPS conditioning: {len(fps_conditioning_params)} parameters")
         logging.info(f"  Skipping FPS adapters: {len(fps_adapter_params)} parameters")
 
-    elif graft_mode:
+    elif decoupled_mode:
         grafted_base_lora = [k for k in filtered_checkpoint.keys()
                              if 'fps_conditioning' not in k and 'fps_adapter' not in k]
         all_blocks_with_base_lora = set()
@@ -365,14 +365,14 @@ def verify_fps_config_applied(pipeline, config):
 
 
 def apply_checkpoint(wan_t2v_pipeline, checkpoint_path, rank=32, dtype=torch.bfloat16,
-                     fps_only=False, base_only=False, graft_mode=False, config=None):
+                     fps_only=False, base_only=False, decoupled_mode=False, config=None):
     """Applies checkpoint weights (FPS-only, base-only, GRAFT, or mixed LoRA+FPS)."""
     logging.info(f"Loading checkpoint: {checkpoint_path}")
 
     checkpoint_type = detect_checkpoint_type(checkpoint_path)
     logging.info(f"Detected checkpoint type: {checkpoint_type}")
 
-    if (fps_only or graft_mode) and config:
+    if (fps_only or decoupled_mode) and config:
         verify_fps_config_applied(wan_t2v_pipeline, config)
 
     configure_base_lora = False
@@ -383,8 +383,8 @@ def apply_checkpoint(wan_t2v_pipeline, checkpoint_path, rank=32, dtype=torch.bfl
     elif base_only:
         logging.info("BASE-ONLY MODE: Configuring only base LoRA adapter")
         configure_base_lora = True
-    elif graft_mode:
-        logging.info("GRAFT MODE: Configuring base LoRA adapter (will be loaded selectively)")
+    elif decoupled_mode:
+        logging.info("DECOUPLED MODE: Configuring base LoRA adapter (will be loaded selectively)")
         configure_base_lora = True
     else:
         if checkpoint_type in ['lora_and_fps', 'unknown']:
@@ -398,14 +398,14 @@ def apply_checkpoint(wan_t2v_pipeline, checkpoint_path, rank=32, dtype=torch.bfl
         logging.info(f"Configured base LoRA adapter with rank {rank}")
 
     fps_block_indices = None
-    if graft_mode:
+    if decoupled_mode:
         if config is None:
             raise ValueError("GRAFT mode requires config to determine FPS block indices")
         fps_block_indices = get_fps_block_indices(config)
-        logging.info(f"GRAFT MODE: Extracted FPS block indices from config: {fps_block_indices}")
+        logging.info(f"DECOUPLED MODE: Extracted FPS block indices from config: {fps_block_indices}")
 
     load_adapter_weights_selective(wan_t2v_pipeline, checkpoint_path,
-                                   fps_only, base_only, graft_mode, fps_block_indices)
+                                   fps_only, base_only, decoupled_mode, fps_block_indices)
 
     fps_mlp_params = 0
     fps_adapter_params_count = 0
@@ -693,7 +693,7 @@ def build_output_filename(line_id, prompt_text, fps=None):
         line_id: 0-based integer prompt index.
         prompt_text: Full prompt string.
         fps: FPS scalar value (float, int, or list). Pass None for
-             modes with no FPS conditioning (--clean, --base_only).
+             modes with no FPS conditioning (--backbone_only, --base_only).
 
     Returns:
         Filename string, e.g. '00001_a_cheetah_in_full_sprint_0.5.mp4'
@@ -1179,7 +1179,7 @@ Examples:
     --prompt "A cheetah in full sprint across golden savannah" \\
     --output_dir output/single \\
     --condition_values 0.5 -1.0 0.0 \\
-    --graft
+    --decoupled
 
   # Batch from file
   PYTHONPATH=. python inference/inference.py \\
@@ -1211,7 +1211,7 @@ Examples:
     --prompt_file prompts.txt \\
     --output_dir output/clean \\
     --condition_values 0.5 \\
-    --clean
+    --backbone_only
 
   # Checkpoint sweep
   PYTHONPATH=. python inference/inference.py \\
@@ -1285,11 +1285,11 @@ Examples:
                         help='CFG guidance scale (default: None, falls back to 7.0)')
 
     # Inference mode flags (mutually exclusive)
-    parser.add_argument('--graft', action='store_true',
-                        help='GRAFT MODE: LoRA all blocks, FPS adapter in deepest-third only '
-                             '(paper method)')
-    parser.add_argument('--clean', action='store_true',
-                        help='CLEAN MODE: pure backbone, no LoRA or FPS adapters loaded')
+    parser.add_argument('--decoupled', action='store_true',
+                        help='DECOUPLED MODE: LoRA all blocks, FPS adapter in deepest-third only '
+                             '(paper method; see Table 1)')
+    parser.add_argument('--backbone_only', action='store_true',
+                        help='BACKBONE-ONLY MODE: pure backbone, no LoRA or FPS adapters loaded')
     parser.add_argument('--fps_only', action='store_true',
                         help='FPS-ONLY MODE: load only FPS-related parameters')
     parser.add_argument('--base_only', action='store_true',
@@ -1304,17 +1304,17 @@ Examples:
     args = parser.parse_args()
 
     # Validate mutually exclusive inference modes
-    exclusive_modes = [args.fps_only, args.base_only, args.graft, args.clean]
+    exclusive_modes = [args.fps_only, args.base_only, args.decoupled, args.backbone_only]
     if sum(exclusive_modes) > 1:
-        parser.error("--fps_only, --base_only, --graft, and --clean are mutually exclusive.")
+        parser.error("--fps_only, --base_only, --decoupled, and --backbone_only are mutually exclusive.")
 
     # Validate alignment requirements
     if args.align and not args.fps_only:
         parser.error("--align requires --fps_only mode.")
 
     # Validate checkpoint requirement
-    if not args.clean and not args.checkpoint and not args.checkpoint_parent:
-        parser.error("Either --checkpoint or --checkpoint_parent is required unless using --clean")
+    if not args.backbone_only and not args.checkpoint and not args.checkpoint_parent:
+        parser.error("Either --checkpoint or --checkpoint_parent is required unless using --backbone_only")
 
     # Validate checkpoint sweep arguments
     if args.checkpoint_parent:
@@ -1349,7 +1349,7 @@ Examples:
         logging.info(f"Parsed condition values: {condition_values_parsed}")
 
         # Determine checkpoint list
-        if args.clean:
+        if args.backbone_only:
             checkpoints_to_process = [(None, None)]
         elif args.checkpoint:
             checkpoints_to_process = [(None, args.checkpoint)]
@@ -1390,7 +1390,7 @@ Examples:
                 logging.info(f"{'#'*80}\n")
 
                 # Reload pipeline fresh for each checkpoint in sweep to avoid weight contamination
-                if checkpoint_idx > 1 and not args.clean:
+                if checkpoint_idx > 1 and not args.backbone_only:
                     logging.info("Reloading pipeline fresh for new checkpoint...")
                     pipeline, config = load_pipeline_from_toml(args.config)
 
@@ -1403,9 +1403,9 @@ Examples:
             # Determine whether FPS value appears in filenames
             include_fps_in_name = True
 
-            if args.clean:
+            if args.backbone_only:
                 if checkpoint_idx == 1:
-                    logging.info("CLEAN MODE: Using original backbone without any LoRA or FPS adapters")
+                    logging.info("BACKBONE-ONLY MODE: Using original backbone without any LoRA or FPS adapters")
                 include_fps_in_name = False
 
             elif args.base_only:
@@ -1417,20 +1417,20 @@ Examples:
                 base_rank = config.get('adapter', {}).get('rank', 32)
                 pipeline = apply_checkpoint(pipeline, checkpoint_path, rank=base_rank,
                                             fps_only=False, base_only=True,
-                                            graft_mode=False, config=config)
+                                            decoupled_mode=False, config=config)
 
-            elif args.graft:
+            elif args.decoupled:
                 if checkpoint_idx == 1:
                     validate_fps_config(config)
                     validate_base_lora_config(config)
                     fps_block_indices = get_fps_block_indices(config)
-                    logging.info(f"GRAFT MODE: FPS + base LoRA in blocks {fps_block_indices}")
+                    logging.info(f"DECOUPLED MODE: FPS + base LoRA in blocks {fps_block_indices}")
 
                 logging.info(f"Applying checkpoint: {checkpoint_path}")
                 base_rank = config.get('adapter', {}).get('rank', 32)
                 pipeline = apply_checkpoint(pipeline, checkpoint_path, rank=base_rank,
                                             fps_only=False, base_only=False,
-                                            graft_mode=True, config=config)
+                                            decoupled_mode=True, config=config)
                 include_fps_in_name = True
 
             else:
@@ -1446,19 +1446,19 @@ Examples:
                         base_rank = config.get('adapter', {}).get('rank', 32)
                         pipeline = apply_checkpoint(pipeline, checkpoint_path, rank=base_rank,
                                                     fps_only=False, base_only=False,
-                                                    graft_mode=False, config=config)
+                                                    decoupled_mode=False, config=config)
                     else:
                         logging.info(f"Applying checkpoint: {checkpoint_path}")
                         base_rank = config.get('adapter', {}).get('rank', 32)
                         pipeline = apply_checkpoint(pipeline, checkpoint_path, rank=base_rank,
                                                     fps_only=True, base_only=False,
-                                                    graft_mode=False, config=config)
+                                                    decoupled_mode=False, config=config)
                 else:
                     logging.info(f"Applying checkpoint: {checkpoint_path}")
                     base_rank = config.get('adapter', {}).get('rank', 32)
                     pipeline = apply_checkpoint(pipeline, checkpoint_path, rank=base_rank,
                                                 fps_only=False, base_only=False,
-                                                graft_mode=False, config=config)
+                                                decoupled_mode=False, config=config)
                 include_fps_in_name = True
 
             all_results = run_batch_inference(

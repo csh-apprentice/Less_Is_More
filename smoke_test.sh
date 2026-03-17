@@ -156,49 +156,49 @@ TEMP_TOML=$(mktemp /tmp/smoke_train_XXXXXX.toml)
 sed "s|ckpt_path = '.*'|ckpt_path = '$BACKBONE_PATH'|" "$TOML_CONFIG" > "$TEMP_TOML"
 info "  Using temp TOML: $TEMP_TOML"
 
-mkdir -p output/smoke_test/clean output/smoke_test/graft
+mkdir -p output/smoke_test/backbone_only output/smoke_test/decoupled
 
-# T1.1: Clean backbone — no adapters, 1 prompt, 4 frames, 4 steps
-info "T1.1  Clean backbone inference (4 frames, 4 steps)"
+# T1.1: Backbone-only — no adapters, 1 prompt, 4 frames, 4 steps
+info "T1.1  Backbone-only inference (4 frames, 4 steps)"
 PYTHONPATH=. python inference/inference.py \
     --config "$TEMP_TOML" \
     --condition_values 0.5 \
     --steps 4 \
     --frames 4 \
-    --output_dir output/smoke_test/clean \
+    --output_dir output/smoke_test/backbone_only \
     --prompt_file "$PROMPT_FILE" \
     --seed 42 \
     --width 512 --height 512 \
-    --clean \
+    --backbone_only \
     --port "$INFERENCE_PORT" \
     2>&1 | tail -20
 
-CLEAN_VIDS=$(find output/smoke_test/clean -name "*.mp4" | wc -l)
-[[ "$CLEAN_VIDS" -gt 0 ]] || fail "T1.1  No output videos found in output/smoke_test/clean"
-pass "T1.1  Clean backbone — $CLEAN_VIDS video(s) generated"
+BACKBONE_VIDS=$(find output/smoke_test/backbone_only -name "*.mp4" | wc -l)
+[[ "$BACKBONE_VIDS" -gt 0 ]] || fail "T1.1  No output videos found in output/smoke_test/backbone_only"
+pass "T1.1  Backbone-only — $BACKBONE_VIDS video(s) generated"
 
-# T1.2: GRAFT mode — LoRA + FPS adapters on deepest third
-info "T1.2  GRAFT inference (4 frames, 4 steps, 3 conditioning values)"
+# T1.2: Decoupled mode — LoRA + FPS adapters on deepest third (paper method)
+info "T1.2  Decoupled inference (4 frames, 4 steps, 3 conditioning values)"
 PYTHONPATH=. python inference/inference.py \
     --config "$TEMP_TOML" \
     --checkpoint "$CHECKPOINT_DIR" \
     --condition_values 0.3 0.5 0.8 \
     --steps 4 \
     --frames 4 \
-    --output_dir output/smoke_test/graft \
+    --output_dir output/smoke_test/decoupled \
     --prompt_file "$PROMPT_FILE" \
     --seed 42 \
     --width 512 --height 512 \
-    --graft \
+    --decoupled \
     --port "$INFERENCE_PORT" \
     2>&1 | tail -20
 
-GRAFT_VIDS=$(find output/smoke_test/graft -name "*.mp4" | wc -l)
-[[ "$GRAFT_VIDS" -gt 0 ]] || fail "T1.2  No output videos found in output/smoke_test/graft"
-pass "T1.2  GRAFT mode — $GRAFT_VIDS video(s) generated"
+DECOUPLED_VIDS=$(find output/smoke_test/decoupled -name "*.mp4" | wc -l)
+[[ "$DECOUPLED_VIDS" -gt 0 ]] || fail "T1.2  No output videos found in output/smoke_test/decoupled"
+pass "T1.2  Decoupled mode — $DECOUPLED_VIDS video(s) generated"
 
-# T1.3: Check GRAFT produced 3 distinct outputs (one per conditioning value)
-[[ "$GRAFT_VIDS" -ge 3 ]] || fail "T1.3  Expected >= 3 videos (one per fps_value), got $GRAFT_VIDS"
+# T1.3: Check decoupled produced 3 distinct outputs (one per conditioning value)
+[[ "$DECOUPLED_VIDS" -ge 3 ]] || fail "T1.3  Expected >= 3 videos (one per condition value), got $DECOUPLED_VIDS"
 pass "T1.3  Distinct conditioning values produced distinct outputs"
 
 rm -f "$TEMP_TOML"
@@ -208,5 +208,5 @@ pass "TIER 1 complete — end-to-end inference verified"
 echo ""
 echo "========================================================"
 echo "  All smoke tests passed."
-echo "  Output videos: output/smoke_test/{clean,graft}/"
+echo "  Output videos: output/smoke_test/{backbone_only,decoupled}/"
 echo "========================================================"

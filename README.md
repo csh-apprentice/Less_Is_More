@@ -236,7 +236,7 @@ PYTHONPATH=. python inference/inference.py \
     --prompt_file metric/high_quality_prompts_96.txt \
     --negative_prompt "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走." \
     --seed 42 --width 512 --height 512 \
-    --graft \
+    --decoupled \
     --port 29500
 ```
 
@@ -253,11 +253,11 @@ PYTHONPATH=. python inference/inference.py \
 
 | Flag | `--checkpoint` needed? | Description |
 |---|---|---|
-| `--graft` | yes | Paper's method: LoRA on all blocks, FPS adapter on deepest third only |
-| *(none)* | yes | "Dirty" baseline: apply all adapters to all blocks |
+| `--decoupled` | yes | Paper's method (Table 1 "Decoupled"): LoRA all blocks, FPS adapter deepest-third only |
+| *(none)* | yes | Joint baseline (Table 1 "Joint"): all adapters applied to all blocks |
 | `--base_only` | yes | Base LoRA only, no FPS adapter |
 | `--fps_only` | yes | FPS adapter only, no base LoRA |
-| `--clean` | no | Original Wan2.1 backbone, no adapters loaded |
+| `--backbone_only` | no | Original Wan2.1 backbone, no adapters loaded |
 
 ---
 
@@ -308,7 +308,7 @@ bash smoke_test.sh
 BACKBONE_PATH=/path/to/Wan2.1-T2V-14B bash smoke_test.sh --tier1
 ```
 
-Expected output: 4 `[PASS]` lines for Tier 0, 3 `[PASS]` lines for Tier 1, plus videos in `output/smoke_test/{clean,graft}/`.
+Expected output: 4 `[PASS]` lines for Tier 0, 3 `[PASS]` lines for Tier 1, plus videos in `output/smoke_test/{backbone_only,decoupled}/`.
 
 > Tier 1 uses all 96 evaluation prompts for thorough coverage. On A6000 48GB this takes ~40 min
 > with 4 frames/4 steps. On A100 80GB expect ~25 min.

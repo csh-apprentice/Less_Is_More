@@ -24,11 +24,11 @@ We present **Less Is More**, a method for injecting controllable camera properti
 
 The conditioning scalar (e.g., normalized shutter speed value) is injected into the **deepest third** of the Wan2.1 transformer blocks via lightweight FPS-adapter modules (LoRA-style, rank 32). A full-model LoRA is trained jointly. At inference, the **GRAFT** strategy applies adapters only to the deepest third, preserving backbone generation quality while enabling precise camera control.
 
-| Property | Training dataset | Conditioning range |
-|---|---|---|
-| Shutter speed | `syn_shutter/` (synthetic, multi-fps videos) | normalized shutter value |
-| Aperture (bokeh) | `syn_aperture/` (Blender synthetic) | normalized aperture value |
-| Color temperature | `syn_temperature/` (synthetic images) | normalized Kelvin value |
+| Property | Training dataset | Conditioning range | Interpretation |
+|---|---|---|---|
+| Shutter speed | `syn_shutter/` (synthetic, multi-fps videos) | [-1, 1] | -1 = fast shutter (sharp/freeze), 0 = neutral, +1 = slow shutter (motion blur) |
+| Aperture (bokeh) | `syn_aperture/` (Blender synthetic) | [-1, 1] | -1 = narrow aperture (deep focus), 0 = neutral, +1 = wide aperture (shallow depth/bokeh) |
+| Color temperature | `syn_temperature/` (synthetic images) | [-1, 1] | -1 = cool/blue, 0 = neutral daylight, +1 = warm/orange |
 
 ---
 
@@ -190,7 +190,7 @@ deepspeed --num_gpus=2 train.py --deepspeed \
     --config configs/train_temperature.toml
 ```
 
-Checkpoints are saved under `./output/<timestamp>/`. The relevant inference artifact is `epoch<N>/adapter_model.safetensors`.
+Checkpoints are saved under `output_dir/<timestamp>/` as configured in the TOML (default: `./checkpoints`). The relevant inference artifact is `<timestamp>/epoch<N>/adapter_model.safetensors`. Each run creates a new timestamped subfolder so reruns never overwrite each other.
 
 ### Multi-GPU configuration
 
@@ -240,7 +240,7 @@ All inference modes are controlled by `inference/inference.py`. **Always run fro
 PYTHONPATH=. python inference/inference.py \
     --config configs/train_temperature.toml \
     --checkpoint checkpoints/temperature/epoch1000 \
-    --fps_values 0.2 0.5 0.8 \
+    --condition_values -0.5 0.0 0.5 \
     --steps 50 --frames 49 \
     --output_dir output/results/temperature \
     --prompt_file metric/high_quality_prompts_96.txt \
@@ -250,19 +250,24 @@ PYTHONPATH=. python inference/inference.py \
     --port 29500
 ```
 
+> **`--config` note:** inference reuses the training TOML — it contains the backbone path (`ckpt_path`) and model architecture parameters needed to reconstruct the model. No separate inference config is needed.
+
+> **Negative prompt note:** the Chinese text is the standard Wan2.1 negative prompt. Use it as-is for best results.
+
 **Conditioning value reference:**
-- `--fps_values` accepts one or more scalar values in the range the model was trained on
-- Multiple values generate one video per value, useful for comparing across the control range
+- `--condition_values` accepts one or more scalars in `[-1, 1]`; `0.0` is the neutral anchor (no effect)
+- Multiple values generate one video per value, useful for sweeping the control range
+- CFG scale (`--scale`): 7.0 is a good general default; try 6.0 for saturated conditioning values near ±1.0
 
 **Other inference modes:**
 
-| Flag | Description |
-|---|---|
-| `--graft` | Paper's clean method: LoRA on all blocks, FPS adapter on deepest third only |
-| *(none)* | Dirty method: apply everything everywhere |
-| `--base_only` | Base LoRA only, no FPS adapter |
-| `--fps_only` | FPS adapter only, no base LoRA |
-| `--clean` | Original Wan2.1 backbone, no adapters |
+| Flag | `--checkpoint` needed? | Description |
+|---|---|---|
+| `--graft` | yes | Paper's method: LoRA on all blocks, FPS adapter on deepest third only |
+| *(none)* | yes | "Dirty" baseline: apply all adapters to all blocks |
+| `--base_only` | yes | Base LoRA only, no FPS adapter |
+| `--fps_only` | yes | FPS adapter only, no base LoRA |
+| `--clean` | no | Original Wan2.1 backbone, no adapters loaded |
 
 ---
 
@@ -309,8 +314,8 @@ bash smoke_test.sh
 
 # Tier 1: GPU required (~40 min on A6000 for 96 prompts × 4 frames × 4 steps)
 # Checks: clean backbone inference + GRAFT inference with 3 conditioning values
-# Before running: edit BACKBONE_PATH at the top of smoke_test.sh
-bash smoke_test.sh --tier1
+# Set BACKBONE_PATH before running:
+BACKBONE_PATH=/path/to/Wan2.1-T2V-14B bash smoke_test.sh --tier1
 ```
 
 Expected output: 4 `[PASS]` lines for Tier 0, 3 `[PASS]` lines for Tier 1, plus videos in `output/smoke_test/{clean,graft}/`.

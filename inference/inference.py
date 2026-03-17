@@ -644,30 +644,30 @@ def load_prompts_from_folder(folder_path):
 # FPS value parsing
 # ---------------------------------------------------------------------------
 
-def parse_fps_values(fps_values_flat, num_conditions):
+def parse_condition_values(condition_values_flat, num_conditions):
     """
-    Parse flat fps_values list into groups based on num_conditions.
+    Parse flat condition_values list into groups based on num_conditions.
 
     Single-condition (num_conditions=1):
-        Input:  [12.0, 24.0, 60.0]
-        Output: [12.0, 24.0, 60.0]
+        Input:  [-1.0, 0.0, 1.0]
+        Output: [-1.0, 0.0, 1.0]
 
     Multi-condition (num_conditions=2):
         Input:  [0.5, 0.02, 1.0, 0.05, 0.125, 0.1]
         Output: [[0.5, 0.02], [1.0, 0.05], [0.125, 0.1]]
     """
     if num_conditions == 1:
-        return fps_values_flat
+        return condition_values_flat
     else:
-        if len(fps_values_flat) % num_conditions != 0:
+        if len(condition_values_flat) % num_conditions != 0:
             raise ValueError(
-                f"fps_values length ({len(fps_values_flat)}) must be divisible by "
-                f"num_conditions ({num_conditions}). Got {len(fps_values_flat)} values "
+                f"condition_values length ({len(condition_values_flat)}) must be divisible by "
+                f"num_conditions ({num_conditions}). Got {len(condition_values_flat)} values "
                 f"which doesn't divide evenly into groups of {num_conditions}."
             )
         grouped = []
-        for i in range(0, len(fps_values_flat), num_conditions):
-            grouped.append(fps_values_flat[i:i + num_conditions])
+        for i in range(0, len(condition_values_flat), num_conditions):
+            grouped.append(condition_values_flat[i:i + num_conditions])
         return grouped
 
 
@@ -755,12 +755,12 @@ def calibrate_alignment_ratios(pipeline, config, prompt, n_prompt, fps_values,
         return {}
 
     print(f"\nCALIBRATION: Running inference with base LoRA + FPS for "
-          f"{len(fps_values)} FPS values", flush=True)
+          f"{len(fps_values)} condition values", flush=True)
     print(f"  Will capture rboth_ijk = ||y_fps|| / ||y_text|| at ALL denoising steps",
           flush=True)
 
     for fps_idx, fps_value in enumerate(fps_values):
-        print(f"\n  Calibrating FPS={fps_value} ({fps_idx+1}/{len(fps_values)})...", flush=True)
+        print(f"\n  Calibrating condition={fps_value} ({fps_idx+1}/{len(fps_values)})...", flush=True)
 
         _ = generate_video_with_fps(
             pipeline, config, prompt, n_prompt, fps_value, seed, steps, scale,
@@ -773,7 +773,7 @@ def calibrate_alignment_ratios(pipeline, config, prompt, n_prompt, fps_values,
         )
 
     print(f"\nCalibration complete: Captured {len(rboth_ratios)} rboth_ijk ratios", flush=True)
-    print(f"  Total: {len(fps_values)} FPS values x {steps} steps x "
+    print(f"  Total: {len(fps_values)} condition values x {steps} steps x "
           f"{len(fps_adapter_block_indices)} blocks", flush=True)
 
     return rboth_ratios
@@ -1178,7 +1178,7 @@ Examples:
     --checkpoint checkpoints/20251014_06-32-03/epoch10 \\
     --prompt "A cheetah in full sprint across golden savannah" \\
     --output_dir output/single \\
-    --fps_values 0.5 -1.0 0.0 \\
+    --condition_values 0.5 -1.0 0.0 \\
     --graft
 
   # Batch from file
@@ -1187,7 +1187,7 @@ Examples:
     --checkpoint checkpoints/20251014_06-32-03/epoch10 \\
     --prompt_file prompts.txt \\
     --output_dir output/batch \\
-    --fps_values 0.5 -1.0 0.0
+    --condition_values 0.5 -1.0 0.0
 
   # Directory of category files (saves in subdirs per category)
   PYTHONPATH=. python inference/inference.py \\
@@ -1195,7 +1195,7 @@ Examples:
     --checkpoint checkpoints/20251014_06-32-03/epoch10 \\
     --prompt_dir prompts/vbench/ \\
     --output_dir output/vbench \\
-    --fps_values 0.5 -1.0 0.0
+    --condition_values 0.5 -1.0 0.0
 
   # Prompt folder (one file per prompt)
   PYTHONPATH=. python inference/inference.py \\
@@ -1203,14 +1203,14 @@ Examples:
     --checkpoint checkpoints/20251014_06-32-03/epoch10 \\
     --prompt_folder prompts/individual/ \\
     --output_dir output/individual \\
-    --fps_values 0.5
+    --condition_values 0.5
 
   # Clean backbone (no LoRA)
   PYTHONPATH=. python inference/inference.py \\
     --config configs/wan_SC_TARGET_14B_FPS_SHAPE_BLUR.toml \\
     --prompt_file prompts.txt \\
     --output_dir output/clean \\
-    --fps_values 0.5 \\
+    --condition_values 0.5 \\
     --clean
 
   # Checkpoint sweep
@@ -1223,7 +1223,7 @@ Examples:
     --checkpoint_interval 5 \\
     --prompt_file prompts.txt \\
     --output_dir output/sweep \\
-    --fps_values 0.5 -1.0
+    --condition_values 0.5 -1.0
         """
     )
 
@@ -1262,8 +1262,9 @@ Examples:
                               help='Directory of .txt files where each file = one prompt')
 
     # FPS and generation parameters
-    parser.add_argument('--fps_values', nargs='+', type=float, default=[0.5],
-                        help='FPS conditioning values. Single-condition: space-separated scalars. '
+    parser.add_argument('--condition_values', nargs='+', type=float, default=[0.5],
+                        help='Conditioning scalar values (range [-1, 1], anchor at 0.0). '
+                             'Single-condition: space-separated scalars. '
                              'Multi-condition: groups of N values per experiment.')
     parser.add_argument('--negative_prompt', default='',
                         help='Negative prompt (optional)')
@@ -1344,8 +1345,8 @@ Examples:
 
         logging.info(f"Detected {num_conditions}-condition model from config")
 
-        fps_values_parsed = parse_fps_values(args.fps_values, num_conditions)
-        logging.info(f"Parsed FPS values: {fps_values_parsed}")
+        condition_values_parsed = parse_condition_values(args.condition_values, num_conditions)
+        logging.info(f"Parsed condition values: {condition_values_parsed}")
 
         # Determine checkpoint list
         if args.clean:
@@ -1464,7 +1465,7 @@ Examples:
                 pipeline=pipeline,
                 config=config,
                 prompts=prompts,
-                fps_values=fps_values_parsed,
+                fps_values=condition_values_parsed,
                 output_dir=checkpoint_output_dir,
                 include_fps_in_name=include_fps_in_name,
                 use_alignment=(args.align and args.fps_only),

@@ -162,7 +162,7 @@ mkdir -p output/smoke_test/clean output/smoke_test/graft
 info "T1.1  Clean backbone inference (4 frames, 4 steps)"
 PYTHONPATH=. python inference/inference.py \
     --config "$TEMP_TOML" \
-    --fps_values 0.5 \
+    --condition_values 0.5 \
     --steps 4 \
     --frames 4 \
     --output_dir output/smoke_test/clean \
@@ -182,7 +182,7 @@ info "T1.2  GRAFT inference (4 frames, 4 steps, 3 conditioning values)"
 PYTHONPATH=. python inference/inference.py \
     --config "$TEMP_TOML" \
     --checkpoint "$CHECKPOINT_DIR" \
-    --fps_values 0.3 0.5 0.8 \
+    --condition_values 0.3 0.5 0.8 \
     --steps 4 \
     --frames 4 \
     --output_dir output/smoke_test/graft \

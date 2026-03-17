@@ -22,7 +22,7 @@ We present **Less Is More**, a method for injecting controllable camera properti
 
 ## Method overview
 
-The conditioning scalar (e.g., normalized shutter speed value) is injected into the **deepest third** of the Wan2.1 transformer blocks via lightweight FPS-adapter modules (LoRA-style, rank 32). A full-model LoRA is trained jointly. At inference, the **GRAFT** strategy applies adapters only to the deepest third, preserving backbone generation quality while enabling precise camera control.
+The conditioning scalar (e.g., normalized shutter speed value) is injected into the **deepest third** of the Wan2.1 transformer blocks via lightweight FPS-adapter modules (LoRA-style, rank 32). A full-model LoRA is trained jointly. At inference, the **Decoupled** strategy applies adapters only to the deepest third, preserving backbone generation quality while enabling precise camera control.
 
 | Property | Training dataset | Conditioning range | Interpretation |
 |---|---|---|---|
@@ -303,7 +303,7 @@ To verify the installation is correct before full inference. **Run from the repo
 bash smoke_test.sh
 
 # Tier 1: GPU required (~40 min on A6000 for 96 prompts × 4 frames × 4 steps)
-# Checks: clean backbone inference + GRAFT inference with 3 conditioning values
+# Checks: backbone-only inference + decoupled inference with 3 conditioning values
 # Set BACKBONE_PATH before running:
 BACKBONE_PATH=/path/to/Wan2.1-T2V-14B bash smoke_test.sh --tier1
 ```

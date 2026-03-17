@@ -225,7 +225,7 @@ Resumes from the most recent DeepSpeed checkpoint in the run directory. Pass a s
 
 All inference modes are controlled by `inference/inference.py`. **Always run from the repo root** with `PYTHONPATH=.` so that `models/`, `utils/`, and `inference_utils/` are importable.
 
-**GRAFT (recommended — paper's clean method):**
+**Decoupled (recommended — paper's method):**
 ```bash
 PYTHONPATH=. python inference/inference.py \
     --config configs/train_temperature.toml \

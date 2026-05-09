@@ -5,6 +5,7 @@
 <a href="https://csh-apprentice.github.io/Less_Is_More/"><img src="https://img.shields.io/badge/Project_Page-green" alt="Project Page"></a>
 <a href="https://huggingface.co/csh-apprentice/Less_Is_More"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Checkpoints-blue" alt="HuggingFace Checkpoints"></a>
 <a href="https://huggingface.co/datasets/csh-apprentice/Less_Is_More-dataset"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-blue" alt="HuggingFace Dataset"></a>
+<a href="https://www.youtube.com/watch?v=ZmWsOyERfAs"><img src="https://img.shields.io/badge/Video-YouTube-red?logo=youtube" alt="Video"></a>
 
 **CVPR 2026**
 
